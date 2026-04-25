@@ -1,14 +1,48 @@
 import './App.css'
+import axios from 'axios';
 
 function App() {
 
+  const sendData = async (data) => {
+    try {
+      // 1. Pass formData directly (do NOT wrap it in { })
+      // 2. Add the multipart/form-data header
+      const response = await axios.post('http://localhost:5000/api/upload', data, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      console.log(response.data);
+    } catch (error) {
+      console.error('Error sending data:', error);
+    }
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    // Create the FormData object directly from the form
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData.entries());
+
+    // ---------------frontend validation to avoids unnecessary API calls-----------------------
+    if (data.file && data.file.size > 5 * 1024 * 1024) {
+      alert("File size must be less than 5MB");
+      return;
+    }
+
+    if (!data.file || !data.file.type.startsWith("image/")) {
+      alert("Only images are allowed");
+      return;
+    }
+
+    // Pass it directly to your function
+    sendData(data);
     console.log(data);
-    e.target.reset()
-  }
+    // Reset the form
+    e.target.reset();
+  };
 
   return (
     <>
